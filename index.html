@@ -3,220 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT Downloader Pro - Datzon</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>YT Downloader</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            min-height: 100vh;
-            padding: 15px;
-        }
-        .container {
-            max-width: 650px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.08);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        header {
-            background: linear-gradient(90deg, #ff0000, #ff5500);
-            padding: 20px;
-            text-align: center;
-        }
-        header h1 { font-size: 26px; }
-        
-        .input-area {
-            padding: 25px;
-            background: rgba(0,0,0,0.3);
-        }
-        input {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.15);
-            color: white;
-            font-size: 16px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            padding: 0 25px 25px;
-        }
-        button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .btn-video { background: #ff0000; color: white; }
-        .btn-music { background: #00c853; color: white; }
-        
-        .result {
-            display: none;
-            padding: 20px;
-            background: rgba(0,0,0,0.4);
-            margin: 0 25px 25px;
-            border-radius: 16px;
-        }
-        .thumbnail {
-            width: 100%;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-        .formats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .format-card {
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .format-card:hover, .format-card.selected {
-            background: #ff0000;
-            transform: scale(1.03);
-        }
-        .download-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(90deg, #ff0000, #ff8800);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .status {
-            text-align: center;
-            padding: 10px;
-            margin: 10px 25px;
-            border-radius: 10px;
-        }
+        body { font-family: Arial; background: #0f0c29; color: white; padding: 20px; text-align: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; }
+        button { padding: 15px; margin: 5px; border: none; border-radius: 10px; font-size: 16px; }
+        .red { background: #ff0000; color: white; }
+        .green { background: #00c853; color: white; }
+        .result { margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎥 YT Downloader Pro</h1>
-        </header>
+    <h1>🎥 YT Downloader</h1>
+    <input type="text" id="url" placeholder="Paste link YouTube" />
+    <br>
+    <button class="red" onclick="download('video')">Video MP4</button>
+    <button class="green" onclick="download('audio')">Musik MP3</button>
 
-        <div class="input-area">
-            <input type="text" id="urlInput" placeholder="Paste link YouTube di sini..." />
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-video" onclick="processVideo()">🎥 Video MP4</button>
-            <button class="btn-music" onclick="processMusic()">🎵 Musik MP3</button>
-        </div>
-
-        <div id="status" class="status"></div>
-
-        <div id="result" class="result">
-            <img id="thumbnail" class="thumbnail" alt="Thumbnail">
-            <h3 id="title" style="margin:10px 0;"></h3>
-            <div id="formatsContainer" class="formats"></div>
-            <button onclick="downloadSelected()" class="download-btn">⬇️ Download File Terpilih</button>
-        </div>
+    <div id="result" class="result">
+        <img id="thumb" width="100%" style="border-radius:10px;">
+        <h3 id="title"></h3>
+        <div id="formats"></div>
     </div>
 
     <script>
-        const API_URL = '/api/youtube.js';   // Sesuai dengan vercel.json kamu
-        
-        let selectedUrl = null;
-        let currentData = null;
+        async function download(type) {
+            const url = document.getElementById('url').value.trim();
+            if (!url) return alert("Masukkan link!");
 
-        async function callAPI(url) {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = '⏳ Sedang mengambil data...';
-            statusEl.style.background = '#334';
+            const res = document.getElementById('result');
+            res.style.display = 'none';
 
             try {
-                const res = await fetch(`\( {API_URL}?url= \){encodeURIComponent(url)}`);
-                const json = await res.json();
+                const form = new URLSearchParams({
+                    auth: "20250901majwlqo",
+                    domain: "api-ak.vidssave.com",
+                    origin: "cache",
+                    link: url
+                });
 
-                if (!json.ok) throw new Error(json.message || 'Gagal dari server');
+                const response = await fetch("https://api.vidssave.com/api/contentsite_api/media/parse", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                    body: form.toString()
+                });
 
-                currentData = json.data;
-                renderResult(currentData);
-                statusEl.textContent = '✅ Pilih format di bawah';
-                statusEl.style.background = '#1a3';
-            } catch (err) {
-                statusEl.innerHTML = `❌ ${err.message}<br><small>Coba link lain atau tunggu beberapa saat</small>`;
-                statusEl.style.background = '#522';
+                const json = await response.json();
+                const data = json.data || json;
+
+                document.getElementById('thumb').src = data.thumbnail || '';
+                document.getElementById('title').textContent = data.title || 'Video';
+
+                const container = document.getElementById('formats');
+                container.innerHTML = '';
+
+                (data.resources || []).forEach(r => {
+                    if ((type === 'video' && r.type !== 'video') || (type === 'audio' && r.type !== 'audio')) return;
+                    const btn = document.createElement('button');
+                    btn.innerHTML = `${r.quality || r.format} - ${(r.size/1024/1024).toFixed(1)} MB`;
+                    btn.style.margin = "5px";
+                    btn.onclick = () => window.open(r.download_url, '_blank');
+                    container.appendChild(btn);
+                });
+
+                res.style.display = 'block';
+            } catch (e) {
+                alert("Gagal: " + e.message);
             }
         }
-
-        function renderResult(data) {
-            document.getElementById('thumbnail').src = data.thumbnail || '';
-            document.getElementById('title').textContent = data.title || 'YouTube Video';
-
-            const container = document.getElementById('formatsContainer');
-            container.innerHTML = '';
-
-            const resources = data.resources || [];
-
-            if (resources.length === 0) {
-                container.innerHTML = '<p style="color:#ff9999; grid-column:1/-1; text-align:center;">Tidak ada format download tersedia</p>';
-                return;
-            }
-
-            resources.forEach(resource => {
-                const div = document.createElement('div');
-                div.className = 'format-card';
-                div.innerHTML = `
-                    <strong>${resource.quality || resource.format}</strong><br>
-                    <small>${resource.format} • ${(resource.size / 1024 / 1024).toFixed(1)} MB</small>
-                `;
-                div.onclick = () => {
-                    document.querySelectorAll('.format-card').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                    selectedUrl = resource.download_url;
-                };
-                container.appendChild(div);
-            });
-
-            document.getElementById('result').style.display = 'block';
-        }
-
-        function processVideo() {
-            const url = document.getElementById('urlInput').value.trim();
-            if (!url) return alert('Masukkan link YouTube dulu!');
-            callAPI(url);
-        }
-
-        function processMusic() {
-            const url = document.getElementById('urlInput').value.trim();
-            if (!url) return alert('Masukkan link YouTube dulu!');
-            callAPI(url);
-        }
-
-        function downloadSelected() {
-            if (!selectedUrl) {
-                alert('Pilih salah satu format dulu!');
-                return;
-            }
-            window.open(selectedUrl, '_blank');
-        }
-
-        // Enter key support
-        document.getElementById('urlInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') processVideo();
-        });
     </script>
 </body>
 </html>
