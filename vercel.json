@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/**/*.js": {
+    "api/youtube.js": {
       "maxDuration": 60
     }
   },
