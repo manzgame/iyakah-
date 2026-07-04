@@ -1,0 +1,48 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/youtube",
+      "destination": "/api/youtube.js"
+    },
+    {
+      "source": "/api/youtube/",
+      "destination": "/api/youtube.js"
+    },
+    {
+      "source": "/youtube",
+      "destination": "/youtube/index.html"
+    },
+    {
+      "source": "/youtube/",
+      "destination": "/youtube/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    }
+  ]
+}
