@@ -1,9 +1,9 @@
 {
   "functions": {
-    "api/youtube.js": { "maxDuration": 60 }
+    "api.js": { "maxDuration": 60 }
   },
   "rewrites": [
-    { "source": "/api/youtube", "destination": "/api/youtube.js" },
-    { "source": "/api/youtube.js", "destination": "/api/youtube.js" }
+    { "source": "/api/youtube", "destination": "/api.js" },
+    { "source": "/api/youtube.js", "destination": "/api.js" }
   ]
 }
